@@ -5,7 +5,8 @@ export type Screen =
   | 'planner'
   | 'corridor'
   | 'analytics'
-  | 'datasources';
+  | 'datasources'
+  | 'mobile-app';
 
 export type Department = 'Engineering' | 'Signal & Telecom' | 'Traction';
 export type RailwayDivision = 'Central Division' | 'Northern Division' | 'Western Division' | 'Southern Division' | 'Eastern Division';

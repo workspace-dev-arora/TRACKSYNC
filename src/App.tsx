@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Menu,
   X,
+  Smartphone,
 } from 'lucide-react';
 import type { Screen, RailwayDivision } from './types';
 import { AppProvider, useApp } from './context/AppContext';
@@ -34,6 +35,7 @@ import BlockPlanner from './screens/BlockPlanner';
 import CorridorView from './screens/CorridorView';
 import Analytics from './screens/Analytics';
 import DataSources from './screens/DataSources';
+import MobileFigmaApp, { type Role as MobileRole } from './screens/MobileFigmaApp';
 
 import ToastContainer from './components/ToastContainer';
 import NewRequestModal from './components/NewRequestModal';
@@ -45,7 +47,14 @@ import NotificationsDrawer from './components/NotificationsDrawer';
 import ActivityLogModal from './components/ActivityLogModal';
 import ResetDemoDialog from './components/ResetDemoDialog';
 
-type AppPhase = 'welcome' | 'landing' | 'login' | 'post-login' | 'app';
+type AppPhase = 'welcome' | 'landing' | 'login' | 'post-login' | 'app' | 'mobile-role-app';
+
+// Roles that use the field/supervisor mobile experience instead of the desktop Control Center
+const MOBILE_ROLES: Record<string, MobileRole> = {
+  'Maintenance Supervisor': 'supervisor',
+  'Field Engineer': 'engineer',
+  'Traction Controller': 'engineer',
+};
 
 const NAVY = '#123B66';
 const DEEP = '#0B2545';
@@ -61,9 +70,14 @@ const pageTitles: Record<Screen, string> = {
   corridor: 'Railway Corridor Schematic',
   analytics: 'Operational Performance Analytics',
   datasources: 'Railway Data Subsystems',
+  'mobile-app': 'Figma Mobile Application View',
 };
 
-function MainAppShell() {
+interface MainAppShellProps {
+  onViewMobileApp?: () => void;
+}
+
+function MainAppShell({ onViewMobileApp }: MainAppShellProps) {
   const {
     user,
     logout,
@@ -81,13 +95,14 @@ function MainAppShell() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const navItems: { id: Screen; label: string; icon: any; badge?: string }[] = [
+  const navItems: { id: Screen | 'mobile-app'; label: string; icon: any; badge?: string }[] = [
     { id: 'control', label: 'Control Center', icon: LayoutDashboard },
     { id: 'planning', label: 'AI Planning', icon: BrainCircuit },
     { id: 'planner', label: 'Block Planner', icon: CalendarDays },
     { id: 'corridor', label: 'Corridor View', icon: Route },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'datasources', label: 'Data Sources', icon: Database },
+    { id: 'mobile-app', label: 'Figma Mobile App', icon: Smartphone, badge: 'V2' },
   ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -135,7 +150,13 @@ function MainAppShell() {
             return (
               <button
                 key={id}
-                onClick={() => setScreen(id)}
+                onClick={() => {
+                  if (id === 'mobile-app' && onViewMobileApp) {
+                    onViewMobileApp();
+                  } else {
+                    setScreen(id as Screen);
+                  }
+                }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-xs font-semibold transition-all relative cursor-pointer ${
                   active ? 'bg-blue-50/80 shadow-xs' : 'text-slate-600 hover:bg-slate-50'
                 }`}
@@ -200,7 +221,7 @@ function MainAppShell() {
             onClick={() => setIsResetDialogOpen(true)}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
           >
-            <RotateCcw size={15} className="text-amber-600" />
+            <RotateCcw size={15} className="text-amber-500" />
             <span className="flex-1 text-left">Reset Demo Data</span>
           </button>
 
@@ -574,13 +595,13 @@ function MainAppShell() {
 }
 
 function AppWithPhase() {
-  const { user } = useApp();
+  const { user, logout } = useApp();
 
   const [phase, setPhase] = useState<AppPhase>(() => {
     const savedPhase = loadFromStorage<AppPhase>(STORAGE_KEYS.APP_PHASE, 'welcome');
-    // If user is already stored from previous session, jump directly to app
-    const savedUser = loadFromStorage(STORAGE_KEYS.USER, null);
-    if (savedUser) return 'app';
+    // If user is already stored from previous session, jump directly to the right shell
+    const savedUser = loadFromStorage<{ role?: string } | null>(STORAGE_KEYS.USER, null);
+    if (savedUser) return MOBILE_ROLES[savedUser.role || ''] ? 'mobile-role-app' : 'app';
     return savedPhase;
   });
 
@@ -592,7 +613,7 @@ function AppWithPhase() {
 
   // If user logs out, go to landing or login
   useEffect(() => {
-    if (!user && phase === 'app') {
+    if (!user && (phase === 'app' || phase === 'mobile-role-app')) {
       setPhase('login');
     }
   }, [user, phase]);
@@ -621,12 +642,31 @@ function AppWithPhase() {
     return (
       <PostLoginTransition
         role={loginRole}
-        onComplete={() => setPhase('app')}
+        onComplete={() => setPhase(MOBILE_ROLES[loginRole] ? 'mobile-role-app' : 'app')}
       />
     );
   }
 
-  return <MainAppShell />;
+  if (phase === 'mobile-role-app') {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 lg:py-6">
+        {/* Phone-frame on wide screens; full-bleed on actual mobile devices */}
+        <div className="w-full h-screen lg:h-[812px] lg:max-h-[92vh] lg:w-[390px] lg:rounded-[2.5rem] lg:border-8 lg:border-slate-800 lg:shadow-2xl overflow-hidden bg-white">
+          <MobileFigmaApp
+            initialRole={MOBILE_ROLES[loginRole] || 'supervisor'}
+            initialScreen="home"
+            onExitToCentralPortal={() => setPhase('app')}
+            onLogout={() => {
+              logout();
+              setPhase('login');
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return <MainAppShell onViewMobileApp={() => setPhase('mobile-role-app')} />;
 }
 
 export default function App() {

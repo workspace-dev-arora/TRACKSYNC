@@ -1,0 +1,10 @@
+{
+  "description": "Effortlessly manage and sync your fitness activities with TRACKSYNC, designed for health enthusiasts seeking to optimize their workouts and track progress.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
