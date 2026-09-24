@@ -649,9 +649,9 @@ function AppWithPhase() {
 
   if (phase === 'mobile-role-app') {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 lg:py-6">
-        {/* Phone-frame on wide screens; full-bleed on actual mobile devices */}
-        <div className="w-full h-screen lg:h-[812px] lg:max-h-[92vh] lg:w-[390px] lg:rounded-[2.5rem] lg:border-8 lg:border-slate-800 lg:shadow-2xl overflow-hidden bg-white">
+
+
+
           <MobileFigmaApp
             initialRole={MOBILE_ROLES[loginRole] || 'supervisor'}
             initialScreen="home"
@@ -661,8 +661,8 @@ function AppWithPhase() {
               setPhase('login');
             }}
           />
-        </div>
-      </div>
+
+
     );
   }
 

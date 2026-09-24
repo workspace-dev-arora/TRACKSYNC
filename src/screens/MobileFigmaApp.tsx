@@ -1909,20 +1909,31 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
-function ProfileScreen({ role, onLogout }: { role: Role; onLogout?: () => void }) {
+function ProfileScreen({
+  role,
+  onLogout,
+  onExitToCentralPortal,
+}: {
+  role: Role;
+  onLogout?: () => void;
+  onExitToCentralPortal?: () => void;
+}) {
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-white border-b border-[#E2E8F0] px-4 py-4">
-        <p className="text-lg font-bold text-[#17202A]">Profile</p>
+      <div className="bg-white border-b border-[#E2E8F0] px-4 py-4 flex items-center justify-between">
+        <p className="text-lg font-bold text-[#17202A]">Profile & Settings</p>
+        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-[#123B66] border border-blue-100 uppercase tracking-wider">
+          {role} Mode
+        </span>
       </div>
       <div className="flex-1 overflow-y-auto scroll-hide px-4 py-4 bg-[#F7F9FC] space-y-3">
         <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "linear-gradient(135deg, #0B2545, #123B66)" }}>
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
             <span className="text-3xl font-bold text-white">RS</span>
           </div>
           <div>
             <p className="text-xl font-bold text-white">R. Sharma</p>
-            <p className="text-blue-200 text-sm">{role === "supervisor" ? "Departmental Maintenance Supervisor" : "Field Engineer"}</p>
+            <p className="text-blue-200 text-sm font-medium">{role === "supervisor" ? "Maintenance Supervisor" : "Field Engineer"}</p>
             <p className="text-blue-300 text-xs mt-0.5">Engineering · Nagpur Division</p>
           </div>
         </div>
@@ -1935,10 +1946,15 @@ function ProfileScreen({ role, onLogout }: { role: Role; onLogout?: () => void }
           ))}
         </div>
         <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
-          {[{ icon: "⚙️", label: "Settings" }, { icon: "🔔", label: "Notification Preferences" }, { icon: "❓", label: "Help & Support" }, { icon: "📋", label: "Terms & Privacy" }].map((m, i, arr) => (
+          {[
+            { icon: "⚙️", label: "App Settings" },
+            { icon: "🔔", label: "Notification Preferences" },
+            { icon: "❓", label: "Help & Support" },
+            { icon: "📋", label: "Terms & Privacy" }
+          ].map((m, i, arr) => (
             <button
               key={m.label}
-              className="w-full flex items-center justify-between px-4 py-4 text-left cursor-pointer"
+              className="w-full flex items-center justify-between px-4 py-4 text-left cursor-pointer hover:bg-slate-50 transition-colors"
               style={i < arr.length - 1 ? { borderBottom: "1px solid #F1F5F9" } : {}}
             >
               <div className="flex items-center gap-3">
@@ -1950,14 +1966,36 @@ function ProfileScreen({ role, onLogout }: { role: Role; onLogout?: () => void }
               </svg>
             </button>
           ))}
+          {onExitToCentralPortal && (
+            <button
+              onClick={onExitToCentralPortal}
+              className="w-full flex items-center justify-between px-4 py-4 text-left cursor-pointer hover:bg-blue-50/50 transition-colors border-t border-[#F1F5F9]"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🖥️</span>
+                <div>
+                  <span className="text-sm font-semibold text-[#123B66]">Open Central Web Portal</span>
+                  <p className="text-[10px] text-[#64748B]">Switch to desktop planner dashboard</p>
+                </div>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#123B66" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </button>
+          )}
         </div>
-        <button
-          onClick={onLogout}
-          className="w-full py-4 rounded-2xl border-2 border-[#FEE2E2] text-sm font-semibold text-[#DC2626] cursor-pointer"
-          style={{ background: "#FFF5F5" }}
-        >
-          Logout
-        </button>
+        <div className="pt-2">
+          <button
+            onClick={onLogout}
+            className="w-full py-3.5 rounded-2xl border border-red-200 text-sm font-bold text-red-600 cursor-pointer shadow-xs hover:bg-red-100/50 transition-colors flex flex-col items-center justify-center gap-0.5"
+            style={{ background: "#FFF5F5" }}
+          >
+            <span>Log Out</span>
+            <span className="text-[10px] text-red-400 font-normal">Sign out to switch role or account</span>
+          </button>
+        </div>
         <div className="p-3 text-center">
           <p className="text-[10px] text-[#CBD5E1] font-mono-data">TRACKSYNC v2.0.1 · Indian Railways · Central Zone</p>
         </div>
@@ -2044,7 +2082,7 @@ export default function MobileFigmaApp({
       case "notifications":
         return <NotificationsScreen onBack={() => navigate("home")} />;
       case "profile":
-        return <ProfileScreen role={role} onLogout={onLogout} />;
+        return <ProfileScreen role={role} onLogout={onLogout} onExitToCentralPortal={onExitToCentralPortal} />;
       case "tasks":
         return <TasksScreen onNavigate={navigate} />;
       default:
@@ -2053,52 +2091,43 @@ export default function MobileFigmaApp({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#D1D9E6] p-2 sm:p-4">
-      {/* Top Banner Control Bar for Switching Roles or Returning to Web Console */}
-      <div className="w-full max-w-[390px] mb-3 flex items-center justify-between bg-[#0B2545] text-white px-4 py-2.5 rounded-2xl shadow-md text-xs">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#F28C28] animate-pulse" />
-          <span className="font-semibold text-slate-200">
-            Role: <span className="text-white capitalize font-bold">{role === 'supervisor' ? 'Maintenance Supervisor' : 'Field Engineer'}</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setRole(role === 'supervisor' ? 'engineer' : 'supervisor')}
-            className="px-2.5 py-1 rounded-lg bg-blue-600/60 hover:bg-blue-600 text-white font-medium transition-colors cursor-pointer"
-          >
-            Switch Role
-          </button>
-          {onExitToCentralPortal && (
-            <button
-              onClick={onExitToCentralPortal}
-              className="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-medium transition-colors cursor-pointer"
-            >
-              Central Web Portal ↗
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 p-0 sm:p-4 relative overflow-hidden select-none">
+      {/* Subtle ambient lighting & glow effect behind the device on desktop */}
+      <div className="hidden sm:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(18,59,102,0.3)_0,transparent_65%)] pointer-events-none" />
 
-      {/* Mobile Device Frame */}
+      {/* Desktop Header Badge & Web Console Action */}
+      {onExitToCentralPortal && (
+        <div className="hidden sm:flex items-center gap-3 absolute top-4 right-6 z-50 bg-slate-900/90 border border-slate-800 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
+          <span className="text-xs text-slate-400 font-medium">Desktop View:</span>
+          <button
+            onClick={onExitToCentralPortal}
+            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer"
+          >
+            Central Web Portal ↗
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Device Frame — iPhone 16 Pro Ergonomic Viewport (393px × 852px) */}
       <div
-        className="relative flex flex-col overflow-hidden"
-        style={{
-          width: "min(390px, 100%)",
-          height: "min(844px, calc(100vh - 100px))",
-          borderRadius: 44,
-          background: "white",
-          boxShadow: "0 40px 100px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.08)",
-        }}
+        className="relative flex flex-col w-full h-full sm:w-[393px] sm:h-[852px] sm:max-h-[92vh] sm:rounded-[52px] sm:border-[10px] sm:border-slate-900 sm:shadow-[0_25px_80px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.08)] bg-white overflow-hidden"
       >
-        {/* Status bar */}
+        {/* Status bar with Dynamic Island Pill */}
         <div
-          className="flex items-center justify-between px-6 pt-3 pb-1 flex-shrink-0 transition-colors duration-300"
+          className="relative flex items-center justify-between px-6 pt-3 pb-2 flex-shrink-0 transition-colors duration-300 select-none z-30"
           style={{ background: screen === "splash" ? "#FAFBFC" : screen === "home" ? "#0B2545" : "white" }}
         >
-          <span className="text-xs font-semibold font-mono-data" style={{ color: headerDark && screen === "home" ? "white" : "#17202A" }}>
+          {/* Time */}
+          <span className="text-[13px] font-bold tracking-tight font-mono-data" style={{ color: headerDark && screen === "home" ? "white" : "#17202A" }}>
             09:41
           </span>
+
+          {/* Dynamic Island Cutout */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-2.5 w-24 h-6 bg-black rounded-full flex items-center justify-end px-2.5 gap-1 shadow-inner">
+            <span className="w-2 h-2 rounded-full bg-emerald-500/80 animate-pulse" />
+          </div>
+
+          {/* Icons */}
           <div className="flex items-center gap-1.5">
             <svg width="16" height="11" viewBox="0 0 16 11" fill={headerDark && screen === "home" ? "white" : "#17202A"}>
               <rect x="0" y="4" width="3" height="7" rx="0.5" opacity="0.4" />
@@ -2114,14 +2143,14 @@ export default function MobileFigmaApp({
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Active Screen Content */}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
           {renderScreen()}
         </div>
 
-        {/* Bottom nav */}
+        {/* Bottom Navigation */}
         {showBottomNav && (
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 z-30 bg-white border-t border-slate-100">
             <BottomNav active={navTab} onNav={handleNav} />
             <div className="flex justify-center pb-2 pt-1 bg-white">
               <div className="w-32 h-1 bg-[#17202A] rounded-full opacity-20" />
