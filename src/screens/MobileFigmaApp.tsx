@@ -2016,6 +2016,7 @@ export default function MobileFigmaApp({
   const [screen, setScreen] = useState<MobileScreen>(initialScreen);
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [role, setRole] = useState<Role>(initialRole);
+  const [viewMode, setViewMode] = useState<"mobile" | "web">("mobile");
 
   useEffect(() => {
     setRole(initialRole);
@@ -2090,23 +2091,147 @@ export default function MobileFigmaApp({
     }
   };
 
+  if (viewMode === "web") {
+    return (
+      <div className="min-h-screen w-full flex flex-col bg-[#F7F9FC] text-[#17202A] select-none">
+        {/* Desktop Web Top Bar for Field Personnel */}
+        <header className="h-16 bg-[#0B2545] text-white px-6 flex items-center justify-between border-b border-slate-800 shadow-md flex-shrink-0 sticky top-0 z-50">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2.5">
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                <rect width="32" height="32" rx="8" fill="#123B66" />
+                <path d="M6 22 L10 18 L14 20 L18 14 L22 16 L26 10" stroke="#F28C28" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="8" y="24" width="16" height="2.5" rx="1.25" fill="#138A4B" />
+              </svg>
+              <div>
+                <span className="font-bold tracking-[0.14em] text-white text-base">TRACKSYNC</span>
+                <span className="text-[10px] text-blue-300 ml-2 font-medium">Field Web Console</span>
+              </div>
+            </div>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden md:flex items-center gap-1.5 ml-4">
+              {[
+                { id: "home" as NavTab, label: "Dashboard" },
+                { id: "requests" as NavTab, label: "Requisitions" },
+                { id: "blocks" as NavTab, label: "Block Schedule" },
+                { id: "tasks" as NavTab, label: "Field Tasks" },
+                { id: "profile" as NavTab, label: "Profile" },
+              ].map((t) => {
+                const active = navTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => handleNav(t.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                      active ? "bg-white/20 text-white shadow-xs" : "text-slate-300 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* View Mode Switcher Pill */}
+          <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-700/60 p-1 rounded-full shadow-inner">
+            <button
+              onClick={() => setViewMode("mobile")}
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="5" y="2" width="14" height="20" rx="3" />
+                <path d="M12 18h.01" />
+              </svg>
+              Mobile View
+            </button>
+            <button
+              onClick={() => setViewMode("web")}
+              className="flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#1769AA] text-white shadow-xs transition-all cursor-pointer"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+              Web View
+            </button>
+          </div>
+
+          {/* Right User Actions */}
+          <div className="flex items-center gap-3">
+            <span className="hidden lg:inline-block text-xs font-medium text-slate-300 bg-white/10 px-3 py-1 rounded-lg">
+              Role: <strong className="text-white capitalize">{role === "supervisor" ? "Maintenance Supervisor" : "Field Engineer"}</strong>
+            </span>
+            {onExitToCentralPortal && (
+              <button
+                onClick={onExitToCentralPortal}
+                className="hidden sm:inline-flex text-xs font-semibold text-blue-300 hover:text-white bg-blue-600/30 hover:bg-blue-600/50 px-3 py-1.5 rounded-xl border border-blue-400/30 transition-all cursor-pointer"
+              >
+                Central Web Portal ↗
+              </button>
+            )}
+            <button
+              onClick={onLogout}
+              className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 text-xs font-semibold border border-red-500/30 transition-colors cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
+        </header>
+
+        {/* Main Content Area for Desktop Web View */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden min-h-[calc(100vh-140px)] flex flex-col">
+            {renderScreen()}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-950 p-0 sm:p-4 relative overflow-hidden select-none">
       {/* Subtle ambient lighting & glow effect behind the device on desktop */}
       <div className="hidden sm:block absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(18,59,102,0.3)_0,transparent_65%)] pointer-events-none" />
 
-      {/* Desktop Header Badge & Web Console Action */}
-      {onExitToCentralPortal && (
-        <div className="hidden sm:flex items-center gap-3 absolute top-4 right-6 z-50 bg-slate-900/90 border border-slate-800 backdrop-blur-md px-4 py-2 rounded-full shadow-lg">
-          <span className="text-xs text-slate-400 font-medium">Desktop View:</span>
+      {/* Desktop Top Bar: View Mode Switcher Pill + Web Console Action */}
+      <div className="hidden sm:flex items-center justify-between w-full max-w-4xl px-4 absolute top-4 z-50">
+        {/* Subtle Toggle Pill */}
+        <div className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 p-1 rounded-full shadow-2xl backdrop-blur-md">
+          <button
+            onClick={() => setViewMode("mobile")}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#1769AA] text-white shadow-xs transition-all cursor-pointer"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="5" y="2" width="14" height="20" rx="3" />
+              <path d="M12 18h.01" />
+            </svg>
+            Mobile View
+          </button>
+          <button
+            onClick={() => setViewMode("web")}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            Web View
+          </button>
+        </div>
+
+        {onExitToCentralPortal && (
           <button
             onClick={onExitToCentralPortal}
-            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors cursor-pointer"
+            className="text-xs font-semibold text-blue-400 hover:text-blue-300 bg-slate-900/90 border border-slate-800 px-4 py-2 rounded-full shadow-lg backdrop-blur-md transition-colors cursor-pointer"
           >
             Central Web Portal ↗
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Mobile Device Frame — iPhone 16 Pro Ergonomic Viewport (393px × 852px) */}
       <div

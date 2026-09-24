@@ -51,9 +51,9 @@ type AppPhase = 'welcome' | 'landing' | 'login' | 'post-login' | 'app' | 'mobile
 
 // Roles that use the field/supervisor mobile experience instead of the desktop Control Center
 const MOBILE_ROLES: Record<string, MobileRole> = {
+  'Supervisor & Field Engineer': 'supervisor',
   'Maintenance Supervisor': 'supervisor',
   'Field Engineer': 'engineer',
-  'Traction Controller': 'engineer',
 };
 
 const NAVY = '#123B66';

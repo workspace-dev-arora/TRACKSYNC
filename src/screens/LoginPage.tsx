@@ -10,9 +10,7 @@ const GREEN = '#138A4B';
 
 const suggestionChips = [
   { id: 'PLN001', role: 'Block Planner' },
-  { id: 'ABC123', role: 'Chief Controller' },
-  { id: 'Rahul', role: 'Maintenance Supervisor' },
-  { id: 'IR-2026-9', role: 'Field Engineer' },
+  { id: 'Rahul', role: 'Supervisor & Field Engineer' },
 ];
 
 interface Props {
@@ -182,9 +180,7 @@ export default function LoginPage({ onSuccess, onBack }: Props) {
                     className="w-full px-3.5 py-2.5 sm:py-2 text-sm sm:text-xs border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:border-blue-400 text-slate-700 font-medium"
                   >
                     <option value="Block Planner">Block Planner (Central Division)</option>
-                    <option value="Maintenance Supervisor">Maintenance Supervisor (S&T / Engg)</option>
-                    <option value="Field Engineer">Field Engineer (Permanent Way)</option>
-                    <option value="Traction Controller">Traction Power Controller (TRD)</option>
+                    <option value="Supervisor & Field Engineer">Supervisor & Field Engineer (S&T / Engg)</option>
                   </select>
                 </div>
 
