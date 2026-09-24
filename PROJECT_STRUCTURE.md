@@ -41,7 +41,7 @@
 
 ```text
 TrackSync Prototype/
-├── .figma/                     # Figma Make integration metadata
+├── .config/                    # System & deployment configuration metadata
 ├── .mise.toml                  # Toolchain configuration (Node & pnpm versions)
 ├── index.html                  # Main HTML shell loading src/main.tsx
 ├── package.json                # Project dependencies and script runner commands
