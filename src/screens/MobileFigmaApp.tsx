@@ -2017,10 +2017,22 @@ export default function MobileFigmaApp({
   const [navTab, setNavTab] = useState<NavTab>("home");
   const [role, setRole] = useState<Role>(initialRole);
   const [viewMode, setViewMode] = useState<"mobile" | "web">("mobile");
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
   useEffect(() => {
     setRole(initialRole);
   }, [initialRole]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const smallScreen = window.innerWidth < 640;
+      setIsMobileDevice(userAgentMobile || smallScreen);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const navTabScreenMap: Record<NavTab, MobileScreen> = {
     home: "home",
@@ -2090,6 +2102,25 @@ export default function MobileFigmaApp({
         return <SupervisorHome onNavigate={navigate} />;
     }
   };
+
+  // ── Native Mobile View for Real Mobile Devices (Full Bleed, No Mockup Frame) ──
+  if (isMobileDevice) {
+    return (
+      <div className="w-full h-dvh min-h-screen flex flex-col bg-white overflow-hidden select-none">
+        {/* Active Native Screen Content */}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          {renderScreen()}
+        </div>
+
+        {/* Native Bottom Navigation */}
+        {showBottomNav && (
+          <div className="flex-shrink-0 z-30 bg-white border-t border-slate-100">
+            <BottomNav active={navTab} onNav={handleNav} />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (viewMode === "web") {
     return (
